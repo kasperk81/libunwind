@@ -91,7 +91,7 @@ void do_backtrace (void)
            PAGE_SIZE, PROT_READ|PROT_WRITE);
 }
 
-void NOINLINE consume_and_run (int depth)
+void consume_and_run (int depth)
 {
   unw_cursor_t cursor;
   unw_context_t uc;
