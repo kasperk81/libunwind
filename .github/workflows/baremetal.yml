@@ -1,0 +1,44 @@
+name: baremetal
+
+on:
+  pull_request:
+    branches: [ master ]
+  push:
+    branches: [ 'master' ]
+    tags: [ '*' ]
+  workflow_dispatch:
+    inputs:
+      sourceUser:
+        description: Source user/org
+        required: true
+        default: libunwind
+      sourceBranch:
+        description: Source branch
+        required: true
+        default: master
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-16.04
+    strategy:
+      matrix:
+        arch: [ 'x86_64' ]
+        opt: [ '-O0', '-O2', '-O3' ]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Build and test
+        run: |
+          OPT=${{ matrix.opt }}
+          autoreconf -i
+          ./configure CFLAGS="$OPT" CXXFLAGS="$OPT"
+          make -j
+          sudo bash -c 'echo core.%p.%p > /proc/sys/kernel/core_pattern'
+          ulimit -c unlimited
+          make check -j
+
+      - name: On failure
+        if: ${{ failure() }}
+        run: cat tests/test-suite.log 2>/dev/null

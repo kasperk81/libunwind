@@ -1,0 +1,47 @@
+name: win
+
+on:
+  pull_request:
+    branches: [ master ]
+  push:
+    branches: [ 'master' ]
+    tags: [ '*' ]
+  workflow_dispatch:
+    inputs:
+      sourceUser:
+        description: Source user/org
+        required: true
+        default: libunwind
+      sourceBranch:
+        description: Source branch
+        required: true
+        default: master
+
+jobs:
+  build-only:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        target: [ 'x86_64-linux-gnu', 'aarch64-linux-gnu', 'arm-linux-gnueabihf' ]
+        include:
+          - arch: x64
+            target: x86_64-linux-gnu
+          - arch: x64
+            target: aarch64-linux-gnu
+          - arch: Win32
+            target: arm-linux-gnueabihf
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Build and test
+        run: |
+          $env:TARGET="${{ matrix.target }}"
+          $BUILDDIR="bin/windows-${{ matrix.arch }}/${env:TARGET}"
+          cmake -G "Visual Studio 16 2019" -A ${{ matrix.arch }} -S . -B $BUILDDIR
+          cmake --build $BUILDDIR
+
+      - name: On failure
+        if: ${{ failure() }}
+        run: cat tests/test-suite.log 2>$NULL
