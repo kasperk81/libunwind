@@ -26,14 +26,46 @@ jobs:
           # Write the custom Program.cs to output the SpecialFolder paths
           Set-Content -Path ./MyApp/Program.cs -Value @'
           using System;
+          using System.Runtime.InteropServices;
           
           class Program
           {
+              // Declare SHGetFolderPathW function using P/Invoke
+              [DllImport("shell32.dll", SetLastError = false, BestFitMapping = false, ExactSpelling = true)]
+              internal static extern unsafe int SHGetFolderPathW(
+                  IntPtr hwndOwner,
+                  int nFolder,
+                  IntPtr hToken,
+                  uint dwFlags,
+                  char* pszPath);
+          
               static void Main()
               {
                   foreach (Environment.SpecialFolder folder in Enum.GetValues(typeof(Environment.SpecialFolder)))
                   {
-                      Console.WriteLine($"{folder}: {Environment.GetFolderPath(folder)}");
+                      // Get the folder path using .NET Environment method
+                      string dotNetPath = Environment.GetFolderPath(folder);
+                      Console.WriteLine($"[Environment] {folder}: {dotNetPath}");
+          
+                      // Get the folder path using SHGetFolderPathW
+                      string shellPath = GetShellFolderPath(folder);
+                      Console.WriteLine($"[SHGetFolderPathW] {folder}: {shellPath}");
+                  }
+              }
+          
+              // Method to call SHGetFolderPathW
+              static unsafe string GetShellFolderPath(Environment.SpecialFolder folder)
+              {
+                  char* buffer = stackalloc char[260];  // Allocate buffer for the folder path
+                  int result = SHGetFolderPathW(IntPtr.Zero, (int)folder, IntPtr.Zero, 0, buffer);
+          
+                  if (result == 0)  // 0 is the success code for SHGetFolderPathW
+                  {
+                      return new string(buffer);  // Convert the char array to a string
+                  }
+                  else
+                  {
+                      return $"Error {result}";  // Return an error code if the API fails
                   }
               }
           }
