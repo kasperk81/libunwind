@@ -25,19 +25,19 @@ jobs:
 
           # Write the custom Program.cs to output the SpecialFolder paths
           Set-Content -Path ./MyApp/Program.cs -Value @"
-using System;
-
-class Program
-{
-    static void Main()
-    {
-        foreach (Environment.SpecialFolder folder in Enum.GetValues(typeof(Environment.SpecialFolder)))
-        {
-            Console.WriteLine($""{folder}: {Environment.GetFolderPath(folder)}"");
-        }
-    }
-}
-"@
+          using System;
+          
+          class Program
+          {
+              static void Main()
+              {
+                  foreach (Environment.SpecialFolder folder in Enum.GetValues(typeof(Environment.SpecialFolder)))
+                  {
+                      Console.WriteLine($""{folder}: {Environment.GetFolderPath(folder)}"");
+                  }
+              }
+          }
+          "@
 
           # Publish the app to a directory (./publish) so it can be shared with Docker
           dotnet publish ./MyApp -c Release -o ./publish
