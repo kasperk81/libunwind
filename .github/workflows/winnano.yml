@@ -14,7 +14,8 @@ jobs:
       - name: Set up Docker and Create Script
         run: |
           # Write PowerShell script to host that will run inside the container
-          @'[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12;
+          @'
+          [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12;
           
           # Download and run the .NET installation script
           Invoke-Expression (& { $(Invoke-WebRequest -UseBasicParsing https://dot.net/v1/dotnet-install.ps1) });
