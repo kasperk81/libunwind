@@ -52,4 +52,4 @@ jobs:
 
       - name: Run Script in Nano Server Container
         run: |
-          docker run --rm -v "${{ github.workspace }}:C:\app" mcr.microsoft.com/windows/nanoserver:ltsc2022 powershell -Command 'echo hi'
+          docker run --rm -v "${{ github.workspace }}:C:\app" mcr.microsoft.com/windows/nanoserver:ltsc2025 cmd.exe /s /c 'echo hi'
