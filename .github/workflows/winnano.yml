@@ -72,7 +72,7 @@ jobs:
           '@
 
           # Publish the app to a directory (./publish) so it can be shared with Docker
-          dotnet publish ./MyApp -c Release --self-contained -o ./publish
+          dotnet publish ./MyApp -c Release --self-contained -p:AllowUnsafeBlocks=true -o ./publish
 
           ./publish/MyApp.exe
 
