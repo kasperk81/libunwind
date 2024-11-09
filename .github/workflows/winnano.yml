@@ -52,4 +52,4 @@ jobs:
 
       - name: Run Script in Nano Server Container
         run: |
-          docker run --rm -v "${{ github.workspace }}:C:\app" mcr.microsoft.com/windows/nanoserver:ltsc2022 cmd.exe /c "dir C:\Windows\System32"
+          docker run --rm -v "${{ github.workspace }}:C:\app" mcr.microsoft.com/windows/nanoserver:ltsc2022 cmd.exe /c "bitsadmin /transfer mydownloadjob /download /priority high https://github.com/PowerShell/PowerShell/releases/download/v7.6.4/PowerShell-7.6.4-win-x64.zip C:\PowerShell.zip"
