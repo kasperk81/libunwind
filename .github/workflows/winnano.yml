@@ -15,10 +15,10 @@ jobs:
         run: |
           # Install .NET 8 SDK on the host
           Invoke-WebRequest -Uri https://dot.net/v1/dotnet-install.ps1 -OutFile dotnet-install.ps1
-          & .\dotnet-install.ps1 -Channel 8.0 -InstallDir 'C:\dotnet'
+          & .\dotnet-install.ps1 -Channel 8.0 -InstallDir '${{ github.workspace }}\dotnet'
 
           # Add dotnet to the PATH for this session
-          $env:Path += ';C:\dotnet'
+          $env:Path += ';${{ github.workspace }}\dotnet'
 
           # Create a new .NET console application in the current directory
           dotnet new console -o MyApp
@@ -122,3 +122,4 @@ jobs:
         run: |
           docker run --rm -v "${{ github.workspace }}\publish:c:\app" mcr.microsoft.com/windows/nanoserver:ltsc2022 C:\app\MyApp.exe
           docker run --rm -v "${{ github.workspace }}\publish:c:\app" mcr.microsoft.com/windows/nanoserver:ltsc2022 cmd /c "set"
+          docker run --rm -v "${{ github.workspace }}\publish:c:\app" mcr.microsoft.com/windows/nanoserver:ltsc2022 C:\app\dotnet\dotnet.exe --info
