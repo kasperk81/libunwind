@@ -31,7 +31,7 @@ jobs:
           & C:\dotnet\dotnet.exe new console -o MyApp;
 
           # Overwrite Program.cs with the custom C# code to print SpecialFolder paths
-          Set-Content -Path MyApp\Program.cs -Value @'
+          Set-Content -Path MyApp\Program.cs -Value @"
           using System;
 
           class Program
@@ -44,7 +44,7 @@ jobs:
                   }
               }
           }
-          '@;
+          "@;
 
           # Run the application to print SpecialFolder paths
           & C:\dotnet\dotnet.exe run --project MyApp;
