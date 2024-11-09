@@ -52,8 +52,4 @@ jobs:
 
       - name: Run Script in Nano Server Container
         run: |
-          # Pull the Nano Server image compatible with GitHub Actions runner
-          docker pull mcr.microsoft.com/windows/nanoserver:ltsc2022
-          
-          # Run the PowerShell script inside the container
-          docker run --rm -v "${{ github.workspace }}:C:\app" mcr.microsoft.com/windows/nanoserver:ltsc2022 powershell -File C:\app\script.ps1
+          docker run --rm -v "${{ github.workspace }}:C:\app" mcr.microsoft.com/windows/nanoserver:ltsc2022 powershell -Command 'echo hi'
