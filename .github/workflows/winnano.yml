@@ -38,19 +38,19 @@ jobs:
 
             # Overwrite Program.cs with the custom C# code to print SpecialFolder paths
             Set-Content -Path MyApp\Program.cs -Value @'
-using System;
-
-class Program
-{
-    static void Main()
-    {
-        foreach (Environment.SpecialFolder folder in Enum.GetValues(typeof(Environment.SpecialFolder)))
-        {
-            Console.WriteLine($""{folder}: {Environment.GetFolderPath(folder)}"");
-        }
-    }
-}
-'@;
+            using System;
+            
+            class Program
+            {
+                static void Main()
+                {
+                    foreach (Environment.SpecialFolder folder in Enum.GetValues(typeof(Environment.SpecialFolder)))
+                    {
+                        Console.WriteLine($""{folder}: {Environment.GetFolderPath(folder)}"");
+                    }
+                }
+            }
+            '@;
 
             # Run the application to print SpecialFolder paths
             & C:\dotnet\dotnet.exe run --project MyApp;
