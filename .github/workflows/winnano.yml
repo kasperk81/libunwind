@@ -1,0 +1,57 @@
+name: Test .NET 8 on Nano Server
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:  # Allows manual triggering
+
+jobs:
+  test-nano-dotnet:
+    runs-on: windows-latest
+
+    steps:
+      - name: Set up Docker
+        run: |
+          # Pull the Nano Server image compatible with GitHub Actions runner
+          docker pull mcr.microsoft.com/windows/nanoserver:ltsc2022
+
+      - name: Install .NET 8, Create, and Run Console Application
+        run: |
+          # Start the Nano Server container to install .NET and create the console app
+          docker run --rm -v ${PWD}:/app mcr.microsoft.com/windows/nanoserver:ltsc2022 powershell -Command "
+            # Set security protocol to TLS 1.2 for downloading the install script
+            [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12;
+
+            # Download and run the .NET installation script
+            Invoke-Expression (& { $(Invoke-WebRequest -UseBasicParsing https://dot.net/v1/dotnet-install.ps1) });
+
+            # Install .NET 8 to the current directory
+            .\dotnet-install.ps1 -Channel 8.0 -InstallDir 'C:\dotnet';
+
+            # Add dotnet to the PATH for this session
+            $env:Path += ';C:\dotnet';
+
+            # Create a new console application
+            cd /app;
+            & C:\dotnet\dotnet.exe new console -o MyApp;
+
+            # Overwrite Program.cs with the custom C# code to print SpecialFolder paths
+            Set-Content -Path MyApp\Program.cs -Value @'
+using System;
+
+class Program
+{
+    static void Main()
+    {
+        foreach (Environment.SpecialFolder folder in Enum.GetValues(typeof(Environment.SpecialFolder)))
+        {
+            Console.WriteLine($""{folder}: {Environment.GetFolderPath(folder)}"");
+        }
+    }
+}
+'@;
+
+            # Run the application to print SpecialFolder paths
+            & C:\dotnet\dotnet.exe run --project MyApp;
+          "
