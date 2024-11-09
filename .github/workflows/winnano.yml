@@ -26,6 +26,7 @@ jobs:
           # Write the custom Program.cs to output the SpecialFolder paths
           Set-Content -Path ./MyApp/Program.cs -Value @'
           using System;
+          using System.Text;
           using System.Runtime.InteropServices;
           
           class Program
