@@ -120,6 +120,6 @@ jobs:
 
       - name: Run Published App in Nano Server Container
         run: |
-          docker run --rm -v "${{ github.workspace }}\publish:c:\app" mcr.microsoft.com/windows/nanoserver:ltsc2022 C:\app\MyApp.exe
-          docker run --rm -v "${{ github.workspace }}\publish:c:\app" mcr.microsoft.com/windows/nanoserver:ltsc2022 cmd /c "set"
-          docker run --rm -v "${{ github.workspace }}\publish:c:\app" mcr.microsoft.com/windows/nanoserver:ltsc2022 C:\app\dotnet\dotnet.exe --info
+          docker run --rm -v "${{ github.workspace }}:c:\app" mcr.microsoft.com/windows/nanoserver:ltsc2022 C:\app\publish\MyApp.exe
+          docker run --rm -v "${{ github.workspace }}:c:\app" mcr.microsoft.com/windows/nanoserver:ltsc2022 cmd /c "set"
+          docker run --rm -v "${{ github.workspace }}:c:\app" mcr.microsoft.com/windows/nanoserver:ltsc2022 C:\app\dotnet\dotnet.exe --info
