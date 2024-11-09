@@ -56,4 +56,4 @@ jobs:
           docker pull mcr.microsoft.com/windows/nanoserver:ltsc2022
           
           # Run the PowerShell script inside the container
-          docker run --rm -v ${PWD}:/app mcr.microsoft.com/windows/nanoserver:ltsc2022 powershell -File /app/script.ps1
+          docker run --rm -v "${{ github.workspace }}:/app" mcr.microsoft.com/windows/nanoserver:ltsc2022 powershell -File /app/script.ps1
