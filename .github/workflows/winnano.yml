@@ -39,6 +39,19 @@ jobs:
                   uint dwFlags,
                   char* pszPath);
           
+              // Declare SHGetKnownFolderPath function using P/Invoke
+              [DllImport("shell32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+              internal static extern int SHGetKnownFolderPath(
+                  ref Guid rfid, 
+                  uint dwFlags, 
+                  IntPtr hToken, 
+                  [Out] StringBuilder pszPath);
+          
+              // Define KNOWNFOLDERID structure (just GUID here for simplicity)
+              public static readonly Guid FOLDERID_Documents = new Guid("FDD39AD0-238F-46AF-ADB4-6C85480369C7");
+              public static readonly Guid FOLDERID_Desktop = new Guid("B4BFCC3A-DB2C-424C-B029-7FE99A1B93A6");
+              // You can define more known folder GUIDs as needed
+              
               static void Main()
               {
                   foreach (Environment.SpecialFolder folder in Enum.GetValues(typeof(Environment.SpecialFolder)))
@@ -50,6 +63,18 @@ jobs:
                       // Get the folder path using SHGetFolderPathW
                       string shellPath = GetShellFolderPath(folder);
                       Console.WriteLine($"[SHGetFolderPathW] {folder}: {shellPath}");
+          
+                      // For known folders, call SHGetKnownFolderPath
+                      if (folder == Environment.SpecialFolder.MyDocuments)
+                      {
+                          string knownFolderPath = GetKnownFolderPath(FOLDERID_Documents);
+                          Console.WriteLine($"[SHGetKnownFolderPath] Documents: {knownFolderPath}");
+                      }
+                      else if (folder == Environment.SpecialFolder.Desktop)
+                      {
+                          string knownFolderPath = GetKnownFolderPath(FOLDERID_Desktop);
+                          Console.WriteLine($"[SHGetKnownFolderPath] Desktop: {knownFolderPath}");
+                      }
                   }
               }
           
@@ -66,6 +91,22 @@ jobs:
                   else
                   {
                       return $"Error {result}";  // Return an error code if the API fails
+                  }
+              }
+          
+              // Method to call SHGetKnownFolderPath
+              static string GetKnownFolderPath(Guid folderId)
+              {
+                  StringBuilder sb = new StringBuilder(260);
+                  int result = SHGetKnownFolderPath(ref folderId, 0, IntPtr.Zero, sb);
+                  
+                  if (result == 0)
+                  {
+                      return sb.ToString();
+                  }
+                  else
+                  {
+                      return $"Error {result}";
                   }
               }
           }
