@@ -11,45 +11,39 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - name: Set up Docker and Create Script
+      - name: Set up Docker and Create Console Application
         run: |
-          # Write PowerShell script to host that will run inside the container
-          @'
-          [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12;
-
-          # Download and run the .NET installation script
-          Invoke-Expression (& { $(Invoke-WebRequest -UseBasicParsing https://dot.net/v1/dotnet-install.ps1) });
-
-          # Install .NET 8 to the current directory
-          .\dotnet-install.ps1 -Channel 8.0 -InstallDir 'C:\dotnet';
+          # Install .NET 8 SDK on the host
+          Invoke-WebRequest -Uri https://dot.net/v1/dotnet-install.ps1 -OutFile dotnet-install.ps1
+          & .\dotnet-install.ps1 -Channel 8.0 -InstallDir 'C:\dotnet'
 
           # Add dotnet to the PATH for this session
-          $env:Path += ';C:\dotnet';
+          $env:Path += ';C:\dotnet'
 
-          # Create a new console application
-          cd /app;
-          & C:\dotnet\dotnet.exe new console -o MyApp;
+          # Create a new .NET console application in the current directory
+          dotnet new console -o MyApp
 
-          # Overwrite Program.cs with the custom C# code to print SpecialFolder paths
-          Set-Content -Path MyApp\Program.cs -Value @"
-          using System;
+          # Write the custom Program.cs to output the SpecialFolder paths
+          Set-Content -Path ./MyApp/Program.cs -Value @"
+using System;
 
-          class Program
-          {
-              static void Main()
-              {
-                  foreach (Environment.SpecialFolder folder in Enum.GetValues(typeof(Environment.SpecialFolder)))
-                  {
-                      Console.WriteLine($""{folder}: {Environment.GetFolderPath(folder)}"");
-                  }
-              }
-          }
-          "@;
+class Program
+{
+    static void Main()
+    {
+        foreach (Environment.SpecialFolder folder in Enum.GetValues(typeof(Environment.SpecialFolder)))
+        {
+            Console.WriteLine($""{folder}: {Environment.GetFolderPath(folder)}"");
+        }
+    }
+}
+"@
 
-          # Run the application to print SpecialFolder paths
-          & C:\dotnet\dotnet.exe run --project MyApp;
-          '@ > script.ps1
+          # Publish the app to a directory (./publish) so it can be shared with Docker
+          dotnet publish ./MyApp -c Release -o ./publish
 
-      - name: Run Script in Nano Server Container
+          ./publish/MyApp.exe
+
+      - name: Run Published App in Nano Server Container
         run: |
-          docker run --rm -v "${{ github.workspace }}:C:\app" mcr.microsoft.com/windows/nanoserver:ltsc2022 cmd.exe /c "bitsadmin /transfer mydownloadjob /download /priority high https://github.com/PowerShell/PowerShell/releases/download/v7.6.4/PowerShell-7.6.4-win-x64.zip C:\PowerShell.zip"
+          docker run --rm -v "${{ github.workspace }}\publish:c:\app" mcr.microsoft.com/windows/nanoserver:ltsc2022 C:\app\MyApp.exe
