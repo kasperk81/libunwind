@@ -56,6 +56,26 @@ jobs:
               [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
               private static extern uint GetCurrentDirectory(uint nBufferLength, StringBuilder lpBuffer);
 
+              [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
+              private static extern uint GetSystemDirectoryW(StringBuilder lpBuffer, uint uSize);
+
+              public static string GetSystemDirectoryPath()
+              {
+                  var builder = new StringBuilder(32);  // Initial buffer for system directory
+
+                  uint length;
+                  while ((length = GetSystemDirectoryW(builder, (uint)builder.Capacity)) > builder.Capacity)
+                  {
+                      builder.EnsureCapacity((int)length);
+                  }
+
+                  if (length == 0)
+                      throw new System.ComponentModel.Win32Exception(Marshal.GetLastWin32Error());
+
+                  builder.Length = (int)length;
+                  return builder.ToString();
+              }
+
               public static string GetCurrentDirectoryPath()
               {
                   var builder = new StringBuilder(260);  // Simulated MAX_PATH buffer
@@ -90,6 +110,9 @@ jobs:
               static void Main()
               {                  string path = GetCurrentDirectoryPath();
                   Console.WriteLine("Current Directory Path: " + path);
+                  string systemDirectoryPath = GetSystemDirectoryPath();
+                  Console.WriteLine("System Directory Path: " + systemDirectoryPath);
+  
                   foreach (Environment.SpecialFolder folder in Enum.GetValues(typeof(Environment.SpecialFolder)))
                   {
                       // Get the folder path using .NET Environment method
