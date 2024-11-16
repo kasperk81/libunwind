@@ -28,7 +28,7 @@ jobs:
           using System;
           using System.Text;
           using System.Runtime.InteropServices;
-          
+
           class Program
           {
               // Declare SHGetFolderPathW function using P/Invoke
@@ -47,14 +47,42 @@ jobs:
                   uint dwFlags, 
                   IntPtr hToken, 
                   [Out] StringBuilder pszPath);
-          
+
               // Define KNOWNFOLDERID structure (just GUID here for simplicity)
               public static readonly Guid FOLDERID_Documents = new Guid("FDD39AD0-238F-46AF-ADB4-6C85480369C7");
               public static readonly Guid FOLDERID_Desktop = new Guid("B4BFCC3A-DB2C-424C-B029-7FE99A1B93A6");
               // You can define more known folder GUIDs as needed
-              
-              static void Main()
+
+              [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
+              private static extern uint GetCurrentDirectory(uint nBufferLength, StringBuilder lpBuffer);
+
+              public static string GetCurrentDirectoryPath()
               {
+                  var builder = new StringBuilder(260);  // Simulated MAX_PATH buffer
+
+                  uint length;
+                  while ((length = GetCurrentDirectory((uint)builder.Capacity, builder)) > builder.Capacity)
+                  {
+                      builder.EnsureCapacity((int)length);
+                  }
+
+                  if (length == 0)
+                      throw new System.ComponentModel.Win32Exception(Marshal.GetLastWin32Error());
+
+                  builder.Length = (int)length;
+
+                  // Attempt to expand 8.3 filenames if present
+                  if (builder.ToString().Contains("~"))
+                  {
+                      return ExpandShortFileName(builder.ToString());
+                  }
+
+                  return builder.ToString();
+              }
+
+              static void Main()
+              {                  string path = GetCurrentDirectoryPath();
+                  Console.WriteLine("Current Directory Path: " + path);
                   foreach (Environment.SpecialFolder folder in Enum.GetValues(typeof(Environment.SpecialFolder)))
                   {
                       // Get the folder path using .NET Environment method
